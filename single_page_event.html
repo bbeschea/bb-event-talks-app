@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1-Day Tech Talk Event</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-container label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .search-container input[type="text"] {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-width: 150px;
+        }
+
+        .schedule {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .talk-card, .break-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+
+        .talk-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .talk-card h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+
+        .talk-card .time {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .talk-card .speakers {
+            font-style: italic;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .talk-card .category {
+            font-size: 0.8em;
+            background-color: #e0f7fa;
+            color: #007bb5;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-right: 5px;
+            margin-bottom: 10px;
+        }
+
+        .break-card {
+            background-color: #ffe0b2;
+            border-color: #ffb74d;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .break-card h3 {
+            color: #e65100;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>1-Day Tech Talk Event</h1>
+
+        <div class="search-container">
+            <label for="categorySearch">Search by Category:</label>
+            <input type="text" id="categorySearch" placeholder="e.g., AI, Frontend, Node.js">
+        </div>
+
+        <h2>Schedule</h2>
+        <div id="schedule" class="schedule">
+            <!-- Talks and breaks will be rendered here by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // Placeholder data (now embedded directly)
+        const talksData = [
+            {
+                id: "talk1",
+                title: "Introduction to AI in Web Development",
+                speakers: ["Alice Johnson"],
+                category: ["AI", "Web Development"],
+                durationMinutes: 60,
+                description: "An overview of how artificial intelligence is changing the landscape of web development, from chatbots to personalized user experiences."
+            },
+            {
+                id: "talk2",
+                title: "Modern JavaScript Frameworks",
+                speakers: ["Bob Smith", "Carol White"],
+                category: ["JavaScript", "Frontend"],
+                durationMinutes: 60,
+                description: "A deep dive into the latest features and best practices of popular JavaScript frameworks like React, Vue, and Angular."
+            },
+            {
+                id: "talk3",
+                title: "CSS-in-JS: Pros and Cons",
+                speakers: ["David Green"],
+                category: ["CSS", "Frontend"],
+                durationMinutes: 60,
+                description: "Exploring the benefits and drawbacks of using CSS-in-JS solutions for styling modern web applications."
+            },
+            {
+                id: "talk4",
+                title: "Backend Development with Node.js & Express",
+                speakers: ["Eve Black"],
+                category: ["Node.js", "Backend"],
+                durationMinutes: 60,
+                description: "Building scalable and efficient RESTful APIs using Node.js and the Express framework."
+            },
+            {
+                id: "talk5",
+                title: "Database Design for Web Applications",
+                speakers: ["Frank Blue"],
+                category: ["Database", "Backend"],
+                durationMinutes: 60,
+                description: "Best practices for designing relational and NoSQL databases to support robust web applications."
+            },
+            {
+                id: "talk6",
+                title: "DevOps for Frontend Developers",
+                speakers: ["Grace Pink", "Harry Brown"],
+                category: ["DevOps", "Frontend"],
+                durationMinutes: 60,
+                description: "An introduction to DevOps principles and tools relevant for frontend developers, including CI/CD pipelines."
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const scheduleContainer = document.getElementById('schedule');
+            const categorySearchInput = document.getElementById('categorySearch');
+            let allScheduleItems = []; // To store talks and breaks with calculated times
+
+            // Function to calculate and render the schedule
+            function renderSchedule(filterCategory = '') {
+                // Start time for the event
+                let currentTime = new Date();
+                currentTime.setHours(10, 0, 0); // Event starts at 10:00 AM
+
+                scheduleContainer.innerHTML = ''; // Clear previous schedule
+
+                const scheduledTalks = [];
+                let talkIndex = 0;
+
+                talksData.forEach((talk, i) => {
+                    // Add lunch break after the 3rd talk
+                    if (i === 3) {
+                        const lunchStartTime = new Date(currentTime.getTime());
+                        const lunchEndTime = new Date(lunchStartTime.getTime() + 60 * 60 * 1000); // 1 hour lunch
+                        scheduledTalks.push({
+                            type: 'break',
+                            title: 'Lunch Break',
+                            startTime: lunchStartTime,
+                            endTime: lunchEndTime,
+                            description: 'Enjoy your meal!'
+                        });
+                        currentTime = new Date(lunchEndTime.getTime()); // Update current time after lunch
+                    }
+
+                    const talkStartTime = new Date(currentTime.getTime());
+                    const talkEndTime = new Date(talkStartTime.getTime() + talk.durationMinutes * 60 * 1000);
+                    
+                    scheduledTalks.push({
+                        type: 'talk',
+                        ...talk,
+                        startTime: talkStartTime,
+                        endTime: talkEndTime
+                    });
+
+                    currentTime = new Date(talkEndTime.getTime() + 10 * 60 * 1000); // Add 10 mins transition
+                });
+
+                allScheduleItems = scheduledTalks; // Store all calculated schedule items
+
+                displayFilteredSchedule(filterCategory);
+            }
+
+            function displayFilteredSchedule(filterCategory) {
+                scheduleContainer.innerHTML = ''; // Clear previous schedule
+                allScheduleItems.forEach(item => {
+                    if (item.type === 'talk') {
+                        const matches = filterCategory === '' || item.category.some(cat => cat.toLowerCase().includes(filterCategory.toLowerCase()));
+                        if (matches) {
+                            const talkCard = document.createElement('div');
+                            talkCard.classList.add('talk-card');
+                            talkCard.innerHTML = `
+                                <div class="time">${item.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${item.endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                <h3>${item.title}</h3>
+                                <div class="speakers">Speakers: ${item.speakers.join(', ')}</div>
+                                <div class="description">${item.description}</div>
+                                <div class="categories">
+                                    ${item.category.map(cat => `<span class="category">${cat}</span>`).join('')}
+                                </div>
+                            `;
+                            scheduleContainer.appendChild(talkCard);
+                        }
+                    } else if (item.type === 'break') {
+                        const breakCard = document.createElement('div');
+                        breakCard.classList.add('break-card');
+                        breakCard.innerHTML = `
+                            <div class="time">${item.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${item.endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            <h3>${item.title}</h3>
+                            <p>${item.description}</p>
+                        `;
+                        scheduleContainer.appendChild(breakCard);
+                    }
+                });
+            }
+
+            // Initial render
+            renderSchedule();
+
+            // Event listener for category search
+            categorySearchInput.addEventListener('input', (event) => {
+                displayFilteredSchedule(event.target.value);
+            });
+        });
+    </script>
+</body>
+</html>
